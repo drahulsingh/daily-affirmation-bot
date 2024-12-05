@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Affirmations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .card-animation {
+            transition: transform 0.3s ease;
+        }
+        .card-animation:hover {
+            transform: translateY(-5px); 
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Theme Toggle -->
+        <div class="fixed top-4 right-4 z-50">
+            <button id="themeToggle" class="bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-shadow">
+                <i class="bi bi-sun text-yellow-500 text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-3">Daily Affirmations</h1>
+            <p class="text-gray-600">Empower your day with positive thoughts</p>
+        </header>
+
+        <!-- Main Affirmation Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 text-center card-animation">
+            <p id="currentAffirmation" class="text-xl md:text-2xl text-gray-700 mb-8">
+                Loading your daily dose of positivity...
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="getNewAffirmation()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-colors flex items-center gap-2">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    New Affirmation
+                </button>
+                <button onclick="saveAffirmation()" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full transition-colors flex items-center gap-2">
+                    <i class="bi bi-heart"></i>
+                    Save
+                </button>
+                <button onclick="shareAffirmation()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full transition-colors flex items-center gap-2">
+                    <i class="bi bi-share"></i>
+                    Share
+                </button>
+            </div>
+        </div>
+
+        <!-- Saved Affirmations -->
+        <section class="mt-12">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Saved Affirmations</h2>
+            <div id="savedAffirmations" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Saved affirmations will be populated here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-full transition-transform duration-300">
+        Notification message
+    </div>
+
+    <script>
+        // Affirmations array  
+        const affirmations = [
+            "I am capable of achieving greatness.",
+            "Every day, in every way, I'm getting better and better.",
+            "I attract positive energy and positive people.",
+            "I am confident and competent in all that I do.",
+            "I trust in my abilities and express myself with confidence.",
+            "I am worthy of love, respect, and happiness.", 
+            "I choose to be happy and spread happiness.",
+            "I am in charge of my own destiny.",
+            "My potential is limitless, and my opportunities are infinite.",
+            "I radiate positivity and attract positivity."
+        ];
+
+        let currentAffirmation = "";
+        let savedAffirmations = JSON.parse(localStorage.getItem('savedAffirmations') || '[]');
+
+        // Theme handling
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        let isDark = false;
+
+        themeToggle.addEventListener('click', () => {
+            isDark = !isDark;
+            if (isDark) {
+                body.classList.remove('from-blue-50', 'to-purple-50');
+                body.classList.add('bg-gray-900');
+                themeToggle.innerHTML = '<i class="bi bi-moon text-blue-300 text-xl"></i>';
+                document.querySelectorAll('.bg-white').forEach(el => {
+                    el.classList.remove('bg-white');
+                    el.classList.add('bg-gray-800');
+                });
+                document.querySelectorAll('.text-gray-800').forEach(el => el.classList.add('text-white'));
+                document.querySelectorAll('.text-gray-700').forEach(el => el.classList.add('text-gray-200'));
+                document.querySelectorAll('.text-gray-600').forEach(el => el.classList.add('text-gray-300'));
+            } else {
+                body.classList.add('from-blue-50', 'to-purple-50');
+                body.classList.remove('bg-gray-900');
+                themeToggle.innerHTML = '<i class="bi bi-sun text-yellow-500 text-xl"></i>';
+                document.querySelectorAll('.bg-gray-800').forEach(el => {
+                    el.classList.add('bg-white');
+                    el.classList.remove('bg-gray-800');
+                });
+                document.querySelectorAll('.text-white').forEach(el => el.classList.remove('text-white'));
+                document.querySelectorAll('.text-gray-200').forEach(el => el.classList.remove('text-gray-200'));
+                document.querySelectorAll('.text-gray-300').forEach(el => el.classList.remove('text-gray-300'));
+            }
+        });
+
+        function getNewAffirmation() {
+            const randomIndex = Math.floor(Math.random() * affirmations.length);
+            currentAffirmation = affirmations[randomIndex];
+            document.getElementById('currentAffirmation').textContent = currentAffirmation;
+        }
+
+        function saveAffirmation() {
+            if (currentAffirmation && !savedAffirmations.includes(currentAffirmation)) {
+                savedAffirmations.push(currentAffirmation);
+                localStorage.setItem('savedAffirmations', JSON.stringify(savedAffirmations));
+                displaySavedAffirmations();
+                showToast('Affirmation saved! ✨');
+            }
+        }
+
+        function shareAffirmation() {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(currentAffirmation)
+                    .then(() => showToast('Affirmation copied to clipboard! 📋'))
+                    .catch(() => showToast('Failed to copy affirmation'));
+            } else {
+                showToast('Clipboard access not available');
+            }
+        }
+
+        function displaySavedAffirmations() {
+            const container = document.getElementById('savedAffirmations');
+            container.innerHTML = '';
+            
+            if (savedAffirmations.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 col-span-2 text-center">No saved affirmations yet. Start saving some!</p>';
+                return;
+            }
+
+            savedAffirmations.forEach((affirmation, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg p-4 shadow fade-in card-animation';
+                card.innerHTML = `
+                    <p class="text-gray-700 mb-3">${affirmation}</p>
+                    <button onclick="deleteAffirmation(${index})" class="text-red-500 hover:text-red-600 text-sm">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function deleteAffirmation(index) {
+            savedAffirmations.splice(index, 1);
+            localStorage.setItem('savedAffirmations', JSON.stringify(savedAffirmations));
+            displaySavedAffirmations();
+            showToast('Affirmation removed');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                toast.style.transform = 'translateY(100%)';
+            }, 3000);
+        }
+
+        // Initialize
+        getNewAffirmation();
+        displaySavedAffirmations();
+    </script>
+</body>
+</html>
